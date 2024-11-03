@@ -7,7 +7,14 @@
 		{
 			"Name": "FPSProject",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine"
+			]
+		},
+		{
+			"Name": "HTTP",
+			"Type": "Runtime"
 		}
 	],
 	"Plugins": [

@@ -10,60 +10,64 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Engine/LocalPlayer.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "GameFramework/DamageType.h"
+#include "Engine/DamageEvents.h"
+#include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
+
+#include "DebugHelper.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
-//////////////////////////////////////////////////////////////////////////
-// AFPSProjectCharacter
 
 AFPSProjectCharacter::AFPSProjectCharacter()
 {
-	// Set size for collision capsule
+
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 		
-	// Create a CameraComponent	
-	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
-	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
-	FirstPersonCameraComponent->SetRelativeLocation(FVector(-10.f, 0.f, 60.f)); // Position the camera
-	FirstPersonCameraComponent->bUsePawnControlRotation = true;
 
-	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
-	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
-	Mesh1P->SetOnlyOwnerSee(true);
-	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
-	Mesh1P->bCastDynamicShadow = false;
-	Mesh1P->CastShadow = false;
-	//Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
-	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+	CameraComponent->SetupAttachment(GetCapsuleComponent());
+	CameraComponent->SetRelativeLocation(FVector(-10.f, 0.f, 60.f)); 
+	CameraComponent->bUsePawnControlRotation = true;
 
+
+	GetMesh()->SetupAttachment(CameraComponent);
+	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
+	WeaponMesh->SetupAttachment(GetMesh(), "WeaponSocket");
 }
 
 void AFPSProjectCharacter::BeginPlay()
 {
-	// Call the base class  
 	Super::BeginPlay();
 }
 
-//////////////////////////////////////////////////////////////////////////// Input
+
 
 void AFPSProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{	
-	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	MyController = Cast<APlayerController>(GetController());
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(MyController->GetLocalPlayer());
+	if (Subsystem && DefaultMappingContext)
 	{
-		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+		{
 
-		// Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AFPSProjectCharacter::Move);
+			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
-		// Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AFPSProjectCharacter::Look);
-	}
-	else
-	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+			// Moving
+			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AFPSProjectCharacter::Move);
+
+			// Looking
+			EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AFPSProjectCharacter::Look);
+
+			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AFPSProjectCharacter::StartFire);
+			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AFPSProjectCharacter::StopFire);
+		}
 	}
 }
 
@@ -92,4 +96,49 @@ void AFPSProjectCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void AFPSProjectCharacter::StartFire(const FInputActionValue& Value)
+{
+	FirstFireDelay = FMath::Max(LastFiredTime + FireRate - GetWorld()->TimeSeconds, 0.f);
+	GetWorldTimerManager().SetTimer(FireTimerHandle, this, &AFPSProjectCharacter::FireEvent, FireRate, !bIsSingleFireWeapon, FirstFireDelay);
+}
+void AFPSProjectCharacter::FireEvent()
+{
+	FVector MuzzleLocation = WeaponMesh->GetSocketLocation("Muzzle");
+	FVector StartPoint = GetCameraComponent()->GetComponentLocation();
+	FVector EndPoint = StartPoint + GetCameraComponent()->GetForwardVector() * TraceDistance;
+
+	LastFiredTime = GetWorld()->TimeSeconds;
+
+	FHitResult OutHit = DoLineTraceByObject(StartPoint, EndPoint);
+	FHitResult RealHit = DoLineTraceByObject(MuzzleLocation,
+		OutHit.Location == FVector::ZeroVector ? OutHit.TraceEnd : OutHit.Location, true);
+	if (OutHit.bBlockingHit && OutHit.GetActor())
+	{
+		FDamageEvent DamageEvent;
+		OutHit.GetActor()->TakeDamage(1.f, DamageEvent, GetController(), this);
+	}
+}
+void AFPSProjectCharacter::StopFire(const FInputActionValue& Value)
+{
+	GetWorldTimerManager().ClearTimer(FireTimerHandle);
+	FireTimerHandle.Invalidate();
+}
+FHitResult AFPSProjectCharacter::DoLineTraceByObject(FVector Start, FVector End, bool ShowDebug, bool ForDuration, float Duration)
+{
+	EDrawDebugTrace::Type DebugType = EDrawDebugTrace::None;
+	if (ShowDebug)
+	{
+		DebugType = EDrawDebugTrace::ForOneFrame;
+		if (ForDuration)
+		{
+			DebugType = EDrawDebugTrace::ForDuration;
+		}
+	}
+	FHitResult OutHit;
+	UKismetSystemLibrary::LineTraceSingleForObjects
+	(this, Start, End, TraceObjectTypes, false, TArray<AActor*>(), DebugType, OutHit, true, FColor::Red, FColor::Green, Duration);
+
+	return OutHit;
 }

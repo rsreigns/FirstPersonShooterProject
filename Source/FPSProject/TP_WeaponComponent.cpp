@@ -44,11 +44,11 @@ void UTP_WeaponComponent::Fire()
 
 	if (FireAnimation != nullptr)
 	{
-		UAnimInstance* AnimInstance = Character->GetMesh1P()->GetAnimInstance();
-		if (AnimInstance != nullptr)
-		{
-			AnimInstance->Montage_Play(FireAnimation, 1.f);
-		}
+		//UAnimInstance* AnimInstance = Character->GetMesh1P()->GetAnimInstance();
+		//if (AnimInstance != nullptr)
+		//{
+		//	AnimInstance->Montage_Play(FireAnimation, 1.f);
+		//}
 	}
 }
 
@@ -62,7 +62,7 @@ bool UTP_WeaponComponent::AttachWeapon(AFPSProjectCharacter* TargetCharacter)
 	}
 
 	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-	AttachToComponent(Character->GetMesh1P(), AttachmentRules, FName(TEXT("GripPoint")));
+	//AttachToComponent(Character->GetMesh1P(), AttachmentRules, FName(TEXT("GripPoint")));
 	Character->AddInstanceComponent(this);
 
 

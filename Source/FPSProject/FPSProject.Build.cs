@@ -8,6 +8,8 @@ public class FPSProject : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
-	}
+		PublicDependencyModuleNames.AddRange(new string[] 
+		{ "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput","HTTP", "Json", "JsonUtilities","GameplayTasks","UMG"});
+        PrivateDependencyModuleNames.AddRange(new string[] { "HTTP" });
+    }
 }
