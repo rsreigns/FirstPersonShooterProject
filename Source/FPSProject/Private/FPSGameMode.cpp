@@ -130,11 +130,11 @@ void AFPSGameMode::RetrieveDataFromJSON()
 										, Location, Rotation, SpawnParams);
 									if (SpawnedBox)
 									{
-										SpawnedBox->SetActorScale3D(Scale);
-										SpawnedBox->GivenHealth = It.Health;
-										SpawnedBox->ScoreToAward = It.Score;
-										SpawnedBox->BoxName = It.Name;
-										SpawnedBox->ApplyMaterialToBox(It.ColorR, It.ColorG, It.ColorB);
+										//SpawnedBox->SetActorScale3D(Scale);
+										//SpawnedBox->GivenHealth = It.Health;
+										//SpawnedBox->ScoreToAward = It.Score;
+										//SpawnedBox->BoxName = It.Name;
+										SpawnedBox->ApplyDefaults(It.ColorR, It.ColorG, It.ColorB,It.Health,It.Score);
 										//DEBUG::PrintString(FString::Printf(TEXT("Health : %f, Score : %f, Color : %f / %f / %f"),
 										//	It.Health,It.Score, SpawnedBox->ColorX , SpawnedBox->ColorY, SpawnedBox->ColorZ),30.f,FColor::Black);
 									}
@@ -164,6 +164,12 @@ void AFPSGameMode::RetrieveDataFromJSON()
 			DEBUG::PrintString("Failed or response invalid", 5.f, FColor::Red);
 		}
 	});
-
+	OnScoreChanged.Broadcast(PlayerScore);
 	Request->ProcessRequest();
+}
+
+void AFPSGameMode::AddPlayerScore(float ScoreToAdd)
+{
+	PlayerScore += ScoreToAdd;
+	OnScoreChanged.Broadcast(PlayerScore);
 }

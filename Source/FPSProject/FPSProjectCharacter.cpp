@@ -15,6 +15,8 @@
 #include "Engine/DamageEvents.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Sound/SoundWave.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "DebugHelper.h"
 
@@ -110,7 +112,7 @@ void AFPSProjectCharacter::FireEvent()
 	FVector EndPoint = StartPoint + GetCameraComponent()->GetForwardVector() * TraceDistance;
 
 	LastFiredTime = GetWorld()->TimeSeconds;
-
+	UGameplayStatics::PlaySound2D(this,FireSound);
 	FHitResult OutHit = DoLineTraceByObject(StartPoint, EndPoint);
 	FHitResult RealHit = DoLineTraceByObject(MuzzleLocation,
 		OutHit.Location == FVector::ZeroVector ? OutHit.TraceEnd : OutHit.Location, true);

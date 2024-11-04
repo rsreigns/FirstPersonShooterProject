@@ -14,6 +14,7 @@ class UInputAction;
 class UInputMappingContext;
 struct FInputActionValue;
 struct FHitResult;
+class USoundWave;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -64,6 +65,9 @@ public:
 	float TraceDistance = 2000.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Core|Trace")
 	bool bIsSingleFireWeapon = false;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Core|Weapon")
+	USoundWave* FireSound;
 
 	FTimerHandle FireTimerHandle;
 	float LastFiredTime;

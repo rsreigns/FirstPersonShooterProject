@@ -5,17 +5,41 @@
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "UObject/ConstructorHelpers.h"
+#include "FPSGameMode.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/WidgetComponent.h"
+#include "Blueprint/UserWidget.h"
+#include "BoxHealthWidget.h"
 
 #include "FPSProject/DebugHelper.h"
 ABoxToSpawn::ABoxToSpawn()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
+	WidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComponent"));
+	WidgetComp->SetupAttachment(RootComponent);
+	WidgetComp->SetDrawAtDesiredSize(true); 
+	WidgetComp->SetDrawSize(FVector2D(50, 250));  
+	WidgetComp->SetWidgetSpace(EWidgetSpace::Screen);
+	WidgetComp->SetRelativeLocation(FVector(0, 0, 100));  
+	WidgetComp->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.5f));  
+	WidgetComp->SetVisibility(true, true);  
+
+
+	static ConstructorHelpers::FClassFinder<UUserWidget> HealthWidgetRef(TEXT("WidgetBlueprint'/Game/Myfiles/UI/UW_HealthBar.UW_HealthBar_C'"));
+	if (HealthWidgetRef.Succeeded())
+	{
+		WidgetComp->SetWidgetClass(HealthWidgetRef.Class);
+	}
+	else
+	{
+		DEBUG::PrintString("Couldnt find health widget ref class", 3.f, FColor::Red);
+	}
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMeshAsset(TEXT("StaticMesh'/Game/Myfiles/Dummy.Dummy'"));
 	if (CubeMeshAsset.Succeeded())                 
 	{
-		DEBUG::PrintString("Mesh fetched successfully ");
 		MeshComp->SetStaticMesh(CubeMeshAsset.Object);
 	}
 	else
@@ -25,7 +49,6 @@ ABoxToSpawn::ABoxToSpawn()
 	static ConstructorHelpers::FObjectFinder<UMaterial> MaterialAsset(TEXT("Material'/Game/Myfiles/Material/M_BoxMaterial.M_BoxMaterial'"));
 	if (MaterialAsset.Succeeded())
 	{
-		DEBUG::PrintString("Material fetched successfully ");
 		MaterialToApply = MaterialAsset.Object;
 		MeshComp->SetMaterial(0,MaterialAsset.Object);
 	}
@@ -39,12 +62,19 @@ ABoxToSpawn::ABoxToSpawn()
 void ABoxToSpawn::BeginPlay()
 {
 	Super::BeginPlay();
+	if (WidgetComp && WidgetComp->GetWidget())
+	{
+		UBoxHealthWidget* Widget = Cast<UBoxHealthWidget>(WidgetComp->GetWidget());
+		if (Widget)
+		{
+			OnHealthChanged.AddDynamic(Widget, &UBoxHealthWidget::UpdateHealth);
+		}
+		WidgetComp->SetWorldLocation(GetActorLocation() + FVector(0.f, 0.f, 100.f));
+	}
 
-
-	CurrentHealth = GivenHealth;
 }
 
-void ABoxToSpawn::ApplyMaterialToBox(double X, double Y , double Z)
+void ABoxToSpawn::ApplyDefaults(double X, double Y , double Z,double HealthValue, double ScoreValue)
 {
 	if (MaterialToApply)
 	{
@@ -67,24 +97,39 @@ void ABoxToSpawn::ApplyMaterialToBox(double X, double Y , double Z)
 	{
 		DEBUG::PrintString("MaterialToApply is null.", 10.f);
 	}
-
+	GivenHealth = HealthValue;
+	CurrentHealth = GivenHealth;
+	OnHealthChanged.Broadcast(GivenHealth);
+	ScoreToAward = ScoreValue;
 }
 
 
 
 float ABoxToSpawn::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	if (GivenHealth - DamageAmount > 0)
+	if (CurrentHealth - DamageAmount > 0)
 	{
-		GivenHealth -= DamageAmount;
-		DEBUG::PrintString(FString::Printf(TEXT("CurrentHealth of %s :%f "), *BoxName, GivenHealth));
+		CurrentHealth -= DamageAmount;
+		//DEBUG::PrintString(FString::Printf(TEXT("CurrentHealth of %s :%f "), *BoxName, GivenHealth));
+		OnHealthChanged.Broadcast(CurrentHealth);
 		return DamageAmount;
 	}
 	else
 	{
-		DEBUG::PrintString(FString::Printf(TEXT("Destroyed, Current Health  :%f "), CurrentHealth));
-		//add score
+
 		//add effects
+		if (ParticleSystem)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ParticleSystem, FTransform(GetActorRotation(), GetActorLocation(), FVector(2.f,2.f,2.f)));
+		}
+		
+		AFPSGameMode* GM = Cast<AFPSGameMode>(UGameplayStatics::GetGameMode(this));
+		if (GM)
+		{
+			GM->AddPlayerScore(ScoreToAward);
+		}
+		
+
 		Destroy(); // may send to pool, if implemented
 		return DamageAmount;
 	}
@@ -92,12 +137,4 @@ float ABoxToSpawn::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 }
 
 
-
-
-// Called every frame
-void ABoxToSpawn::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
 

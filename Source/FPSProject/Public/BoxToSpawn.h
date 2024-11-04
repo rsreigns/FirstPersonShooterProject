@@ -6,8 +6,14 @@
 #include "GameFramework/Actor.h"
 #include "BoxToSpawn.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, float, NewHealth);
+
 class UMaterial;
 class UStaticMeshComponent;
+class UWidgetComponent;
+class UParticleSystem;
+class UUserWidget;
+class UBoxHealthWidget;
 
 UCLASS()
 class FPSPROJECT_API ABoxToSpawn : public AActor
@@ -23,11 +29,13 @@ protected:
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
-	double CurrentHealth;
 public:	
 #pragma region Components
-	UPROPERTY(EditDefaultsOnly, Category = "MeshComp")
+	UPROPERTY(EditDefaultsOnly, Category = "Core|MeshComp")
 	UStaticMeshComponent* MeshComp;
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category = "Core|Widget")
+	UWidgetComponent* WidgetComp;
+
 #pragma endregion
 	UPROPERTY(EditInstanceOnly)
 	FString BoxName;
@@ -36,13 +44,20 @@ public:
 	UPROPERTY(EditInstanceOnly)
 	double ScoreToAward;
 
+	UPROPERTY(BlueprintAssignable,Category="Event")
+	FOnHealthChanged OnHealthChanged;
+
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Core|Material")
 	UMaterial* MaterialToApply;
 
-	void ApplyMaterialToBox(double X, double Y, double Z);
+	void ApplyDefaults(double X, double Y, double Z, double HealthValue, double ScoreValue);
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Core|Particle")
+	UParticleSystem* ParticleSystem;
 
-	virtual void Tick(float DeltaTime) override;
+	UPROPERTY()
+	double CurrentHealth;
+
 
 };
