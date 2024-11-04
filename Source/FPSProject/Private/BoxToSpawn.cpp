@@ -10,6 +10,8 @@
 #include "Components/WidgetComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "BoxHealthWidget.h"
+#include "Particles/ParticleSystem.h"
+#include "Sound/Soundbase.h"
 
 #include "FPSProject/DebugHelper.h"
 ABoxToSpawn::ABoxToSpawn()
@@ -44,7 +46,7 @@ ABoxToSpawn::ABoxToSpawn()
 	}
 	else
 	{
-		DEBUG::PrintString("Unable to fetch the mesh ");
+		DEBUG::PrintString("Unable to fetch the mesh ",10.f,FColor::Red);
 	}
 	static ConstructorHelpers::FObjectFinder<UMaterial> MaterialAsset(TEXT("Material'/Game/Myfiles/Material/M_BoxMaterial.M_BoxMaterial'"));
 	if (MaterialAsset.Succeeded())
@@ -54,9 +56,26 @@ ABoxToSpawn::ABoxToSpawn()
 	}
 	else
 	{
-		DEBUG::PrintString("Unable to fetch the material ", 10.f);
+		DEBUG::PrintString("Unable to fetch the material ", 10.f, FColor::Red); 
+	} 
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> ParticleAsset(TEXT("ParticleSystem'/Game/Myfiles/P_Explosion.P_Explosion'"));
+	if (ParticleAsset.Succeeded())
+	{
+		ParticleSystem = ParticleAsset.Object; 
 	}
-
+	else
+	{
+		DEBUG::PrintString("Failed to load particle system", 10.f, FColor::Red); 
+	}
+	static ConstructorHelpers::FObjectFinder<USoundBase> SoundAsset(TEXT("SoundWave'/Game/Myfiles/Sound/Explosion02.Explosion02'"));
+	if (SoundAsset.Succeeded())
+	{
+		ExplosionSound = SoundAsset.Object;
+	}
+	else
+	{
+		DEBUG::PrintString("Failed to Explosion sound", 10.f, FColor::Red);
+	}
 }
 
 void ABoxToSpawn::BeginPlay()
@@ -120,7 +139,11 @@ float ABoxToSpawn::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 		//add effects
 		if (ParticleSystem)
 		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ParticleSystem, FTransform(GetActorRotation(), GetActorLocation(), FVector(2.f,2.f,2.f)));
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ParticleSystem, FTransform(GetActorRotation(), GetActorLocation(), FVector(1.f, 1.f, 1.f)));
+		}
+		if (ExplosionSound)
+		{
+			UGameplayStatics::SpawnSoundAtLocation(this, ExplosionSound, GetActorLocation());
 		}
 		
 		AFPSGameMode* GM = Cast<AFPSGameMode>(UGameplayStatics::GetGameMode(this));

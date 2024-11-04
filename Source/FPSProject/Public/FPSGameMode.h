@@ -6,7 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "FPSGameMode.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnScoreChanged, int32, NewScore);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnScoreChanged, float, NewScore);
 
 class ABoxToSpawn;
 USTRUCT(BlueprintType)
@@ -54,5 +54,7 @@ public:
 	FOnScoreChanged OnScoreChanged;
 
 	void AddPlayerScore(float ScoreToAdd);
+
+	virtual void BeginPlay() override;
 
 };

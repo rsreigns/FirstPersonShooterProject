@@ -13,5 +13,10 @@ UCLASS()
 class FPSPROJECT_API UMyUserScoreWidget : public UUserWidget
 {
 	GENERATED_BODY()
+public:
+	void UpdateScore(float NewScore);
+
+	UPROPERTY(BlueprintReadOnly)
+	float CurrentScore;
 	
 };

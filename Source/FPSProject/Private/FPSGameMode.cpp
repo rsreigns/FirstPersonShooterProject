@@ -9,8 +9,10 @@
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
 #include "BoxToSpawn.h"
+#include "MyUserScoreWidget.h"
+#include "Blueprint/UserWidget.h"
 
-#include "TESTSpawnBox.h"
+//#include "TESTSpawnBox.h"
 #include "FPSProject/DebugHelper.h"
 #include "DrawDebugHelpers.h"
 
@@ -130,10 +132,6 @@ void AFPSGameMode::RetrieveDataFromJSON()
 										, Location, Rotation, SpawnParams);
 									if (SpawnedBox)
 									{
-										//SpawnedBox->SetActorScale3D(Scale);
-										//SpawnedBox->GivenHealth = It.Health;
-										//SpawnedBox->ScoreToAward = It.Score;
-										//SpawnedBox->BoxName = It.Name;
 										SpawnedBox->ApplyDefaults(It.ColorR, It.ColorG, It.ColorB,It.Health,It.Score);
 										//DEBUG::PrintString(FString::Printf(TEXT("Health : %f, Score : %f, Color : %f / %f / %f"),
 										//	It.Health,It.Score, SpawnedBox->ColorX , SpawnedBox->ColorY, SpawnedBox->ColorZ),30.f,FColor::Black);
@@ -172,4 +170,9 @@ void AFPSGameMode::AddPlayerScore(float ScoreToAdd)
 {
 	PlayerScore += ScoreToAdd;
 	OnScoreChanged.Broadcast(PlayerScore);
+}
+
+void AFPSGameMode::BeginPlay()
+{
+	RetrieveDataFromJSON();// remove this function call from bp
 }

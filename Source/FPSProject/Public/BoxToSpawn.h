@@ -14,6 +14,7 @@ class UWidgetComponent;
 class UParticleSystem;
 class UUserWidget;
 class UBoxHealthWidget;
+class USoundBase;
 
 UCLASS()
 class FPSPROJECT_API ABoxToSpawn : public AActor
@@ -55,6 +56,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Core|Particle")
 	UParticleSystem* ParticleSystem;
+
+	USoundBase* ExplosionSound;
 
 	UPROPERTY()
 	double CurrentHealth;

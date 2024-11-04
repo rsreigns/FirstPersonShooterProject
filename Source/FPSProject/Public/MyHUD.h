@@ -7,6 +7,7 @@
 #include "MyHUD.generated.h"
 
 class UUserWidget;
+class UMyUserScoreWidget;
 
 UCLASS()
 class FPSPROJECT_API AMyHUD : public AHUD
@@ -18,5 +19,13 @@ public:
 	TArray<TSubclassOf<UUserWidget>> WidgetsToAdd;
 
 	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void UpdateScore(float NewScore);
+
+	UMyUserScoreWidget* ScoreWidget;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Core|UI|Score")
+	TSubclassOf<UMyUserScoreWidget> ScoreWidgetClass;
 	
 };

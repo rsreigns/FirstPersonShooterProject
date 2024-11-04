@@ -3,7 +3,8 @@
 
 #include "MyHUD.h"
 #include "Blueprint/UserWidget.h"
-
+#include "MyUserScoreWidget.h"
+#include "FPSGameMode.h"
 
 void AMyHUD::BeginPlay()
 {
@@ -16,6 +17,25 @@ void AMyHUD::BeginPlay()
 		{
 			WidgetInstance->AddToViewport();
 		}
+	}
 
+	ScoreWidget = CreateWidget<UMyUserScoreWidget>(GetWorld(), ScoreWidgetClass);
+	if (ScoreWidget)
+	{
+		ScoreWidget->AddToViewport();
+		AFPSGameMode* GM = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
+		if (GM)
+		{
+			GM->OnScoreChanged.AddDynamic(this, &ThisClass::UpdateScore);
+		}
+	}
+
+}
+
+void AMyHUD::UpdateScore(float NewScore)
+{
+	if (ScoreWidget)
+	{
+		ScoreWidget->UpdateScore(NewScore);
 	}
 }
