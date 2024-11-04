@@ -35,15 +35,12 @@ public:
 	double GivenHealth;
 	UPROPERTY(EditInstanceOnly)
 	double ScoreToAward;
-	UPROPERTY(EditInstanceOnly)
-	int32 ColorX; 
-	UPROPERTY(EditInstanceOnly)
-	int32 ColorY;
-	UPROPERTY(EditInstanceOnly)
-	int32 ColorZ;
+
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Core|Material")
 	UMaterial* MaterialToApply;
+
+	void ApplyMaterialToBox(double X, double Y, double Z);
 
 
 	virtual void Tick(float DeltaTime) override;

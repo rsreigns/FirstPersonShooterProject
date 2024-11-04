@@ -12,14 +12,26 @@ ABoxToSpawn::ABoxToSpawn()
 	PrimaryActorTick.bCanEverTick = true;
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMeshAsset(TEXT("StaticMesh'/Script/Engine.StaticMesh'/Game/Myfiles/Dummy.Dummy'"));
-	if (CubeMeshAsset.Succeeded())
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMeshAsset(TEXT("StaticMesh'/Game/Myfiles/Dummy.Dummy'"));
+	if (CubeMeshAsset.Succeeded())                 
 	{
+		DEBUG::PrintString("Mesh fetched successfully ");
 		MeshComp->SetStaticMesh(CubeMeshAsset.Object);
 	}
 	else
 	{
 		DEBUG::PrintString("Unable to fetch the mesh ");
+	}
+	static ConstructorHelpers::FObjectFinder<UMaterial> MaterialAsset(TEXT("Material'/Game/Myfiles/Material/M_BoxMaterial.M_BoxMaterial'"));
+	if (MaterialAsset.Succeeded())
+	{
+		DEBUG::PrintString("Material fetched successfully ");
+		MaterialToApply = MaterialAsset.Object;
+		MeshComp->SetMaterial(0,MaterialAsset.Object);
+	}
+	else
+	{
+		DEBUG::PrintString("Unable to fetch the material ", 10.f);
 	}
 
 }
@@ -27,16 +39,38 @@ ABoxToSpawn::ABoxToSpawn()
 void ABoxToSpawn::BeginPlay()
 {
 	Super::BeginPlay();
-	if (MaterialToApply)
-	{
-		UMaterialInstanceDynamic* DynamicMaterial = MeshComp->CreateDynamicMaterialInstance(0, MaterialToApply);
-		DynamicMaterial->SetScalarParameterValue("Red", ColorX / 255);
-		DynamicMaterial->SetScalarParameterValue("Green", ColorY / 255);
-		DynamicMaterial->SetScalarParameterValue("Blue", ColorZ / 255);
-		MeshComp->SetMaterial(0, DynamicMaterial);
-	}
+
+
 	CurrentHealth = GivenHealth;
 }
+
+void ABoxToSpawn::ApplyMaterialToBox(double X, double Y , double Z)
+{
+	if (MaterialToApply)
+	{
+		UMaterialInstanceDynamic* DynamicMaterial = MeshComp->CreateAndSetMaterialInstanceDynamic(0);
+		if (DynamicMaterial)
+		{
+			DynamicMaterial->SetScalarParameterValue("Red", X / 255.0f);
+			DynamicMaterial->SetScalarParameterValue("Green", Y / 255.0f);
+			DynamicMaterial->SetScalarParameterValue("Blue", Z / 255.0f);
+
+			MeshComp->SetMaterial(0, DynamicMaterial);
+
+		}
+		else
+		{
+			DEBUG::PrintString("Failed to create dynamic material instance.", 10.f);
+		}
+	}
+	else
+	{
+		DEBUG::PrintString("MaterialToApply is null.", 10.f);
+	}
+
+}
+
+
 
 float ABoxToSpawn::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
@@ -48,7 +82,7 @@ float ABoxToSpawn::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 	}
 	else
 	{
-		DEBUG::PrintString(FString::Printf(TEXT("Destroyed, Current Health  :%f "), GivenHealth));
+		DEBUG::PrintString(FString::Printf(TEXT("Destroyed, Current Health  :%f "), CurrentHealth));
 		//add score
 		//add effects
 		Destroy(); // may send to pool, if implemented
@@ -56,9 +90,6 @@ float ABoxToSpawn::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 	}
 
 }
-
-
-
 
 
 

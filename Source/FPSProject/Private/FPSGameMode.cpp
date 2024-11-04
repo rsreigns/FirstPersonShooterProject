@@ -18,6 +18,7 @@
 
 void AFPSGameMode::RetrieveDataFromJSON()
 {
+	DEBUG::PrintString("retrieving data");
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
 	Request->SetURL("https://raw.githubusercontent.com/CyrusCHAU/Varadise-Technical-Test/refs/heads/main/data.json");
 	Request->SetVerb("GET");
@@ -123,9 +124,9 @@ void AFPSGameMode::RetrieveDataFromJSON()
 									SpawnParams.Owner = this;
 									SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-									DEBUG::PrintString(FString::Printf(TEXT("Scale : %s"), *Scale.ToString()),12.f);
-									DrawDebugSphere(GetWorld(), Location, 40.f, 12, FColor::Red, true, -1.f, (uint8)0U, 1.f);
-									ABoxToSpawn* SpawnedBox = GetWorld()->SpawnActor<ABoxToSpawn>(SpawnBox
+									//DEBUG::PrintString(FString::Printf(TEXT("Scale : %s"), *Scale.ToString()),12.f);
+									//DrawDebugSphere(GetWorld(), Location, 40.f, 12, FColor::Red, true, -1.f, (uint8)0U, 1.f);
+									ABoxToSpawn* SpawnedBox = GetWorld()->SpawnActor<ABoxToSpawn>(ABoxToSpawn::StaticClass()
 										, Location, Rotation, SpawnParams);
 									if (SpawnedBox)
 									{
@@ -133,11 +134,9 @@ void AFPSGameMode::RetrieveDataFromJSON()
 										SpawnedBox->GivenHealth = It.Health;
 										SpawnedBox->ScoreToAward = It.Score;
 										SpawnedBox->BoxName = It.Name;
-										SpawnedBox->ColorX = It.ColorR;
-										SpawnedBox->ColorY = It.ColorG;
-										SpawnedBox->ColorZ = It.ColorB;
-										DEBUG::PrintString(FString::Printf(TEXT("Health : %f, Score : %f, Color : %f / %f / %f"),
-											It.Health,It.Score,It.ColorR,It.ColorG,It.ColorB),30.f,FColor::Black);
+										SpawnedBox->ApplyMaterialToBox(It.ColorR, It.ColorG, It.ColorB);
+										//DEBUG::PrintString(FString::Printf(TEXT("Health : %f, Score : %f, Color : %f / %f / %f"),
+										//	It.Health,It.Score, SpawnedBox->ColorX , SpawnedBox->ColorY, SpawnedBox->ColorZ),30.f,FColor::Black);
 									}
 									else
 									{
