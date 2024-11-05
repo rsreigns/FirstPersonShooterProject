@@ -69,7 +69,6 @@ void AHISMSpawner::ReturnToPool(ABoxToSpawn* Object)
 void AHISMSpawner::BeginPlay()
 {
 	Super::BeginPlay();
-
 	PoolTransform = GetActorTransform();
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
@@ -78,9 +77,10 @@ void AHISMSpawner::BeginPlay()
 	{
 		ABoxToSpawn* PoolObject = GetWorld()->SpawnActor<ABoxToSpawn>(ABoxToSpawn::StaticClass(), PoolTransform, SpawnParams);
 		BoxPool.Add(PoolObject);
-		PoolObject->SetActorHiddenInGame(false);
+		PoolObject->SetActorHiddenInGame(true);
 		PoolObject->SetActorEnableCollision(false);
 	}
+	ISMComp->ClearInstances();
 	
 }
 

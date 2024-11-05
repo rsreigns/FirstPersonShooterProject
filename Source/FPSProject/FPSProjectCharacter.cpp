@@ -129,6 +129,7 @@ void AFPSProjectCharacter::FireEvent()
 				MyHUDRef->HealthWidget->SeeWidget(BoxRef);
 			}
 		}
+
 	}
 }
 void AFPSProjectCharacter::StopFire(const FInputActionValue& Value)

@@ -79,7 +79,6 @@ void AFPSGameMode::RetrieveDataFromJSON()
 				const TArray<TSharedPtr<FJsonValue>>* ObjectsArray;
 				if (JSONObject->TryGetArrayField("objects", ObjectsArray))
 				{
-					int32  InstanceIndex = 0;
 					for (const auto& JsonValue : *ObjectsArray)
 					{
 						TSharedPtr<FJsonObject> TypeObject = JsonValue->AsObject();
@@ -125,14 +124,8 @@ void AFPSGameMode::RetrieveDataFromJSON()
 										}
 
 									}
-
-									//spawn logic
-									FActorSpawnParameters SpawnParams;
-									SpawnParams.Owner = this;
-									SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 									FTransform Transform(Rotation, Location, Scale);
-									HISMObject->GetPoolObject()->ApplyDefaults(It.ColorR, It.ColorG, It.ColorB, It.Health, It.Score, Transform, HISMObject->ISMComp, InstanceIndex);
-									InstanceIndex+=1;
+									HISMObject->GetPoolObject()->ApplyDefaults(It.ColorR, It.ColorG, It.ColorB, It.Health, It.Score, Transform, HISMObject->ISMComp);
 									//DEBUG::PrintString(FString::Printf(TEXT("Health : %f, Score : %f, Color : %f / %f / %f"),
 									//It.Health,It.Score, SpawnedBox->ColorX , SpawnedBox->ColorY, SpawnedBox->ColorZ),30.f,FColor::Black);
 								}
@@ -172,5 +165,5 @@ void AFPSGameMode::BeginPlay()
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	FTransform NewTransform(FRotator(), FVector(0.f,0.f,-2000.f));
 	HISMObject = GetWorld()->SpawnActor<AHISMSpawner>(AHISMSpawner::StaticClass(), NewTransform, SpawnParams);
-	RetrieveDataFromJSON(); // remove this function call from bp
+	RetrieveDataFromJSON(); 
 }

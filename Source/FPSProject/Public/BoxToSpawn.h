@@ -20,7 +20,7 @@ class FPSPROJECT_API ABoxToSpawn : public AActor
 {
 	GENERATED_BODY()
 	
-private:
+public:
 	int32 InstanceIndex;
 	UHierarchicalInstancedStaticMeshComponent* ISMCompRef;
 public:	
@@ -48,7 +48,7 @@ public:
 
 
 	void ApplyDefaults(double X, double Y, double Z, double HealthValue, double ScoreValue, FTransform Transform,
-		UHierarchicalInstancedStaticMeshComponent* Component,int32 Index);
+		UHierarchicalInstancedStaticMeshComponent* Component);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Core|Particle")
 	UParticleSystem* ParticleSystem;

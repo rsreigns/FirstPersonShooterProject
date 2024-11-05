@@ -19,7 +19,8 @@ void UBoxHealthWidget::HideWidget()
 
 void UBoxHealthWidget::SeeWidget(ABoxToSpawn* Object)
 {
-    Percent = 1 - ( Object->CurrentHealth / Object->GivenHealth);
+	CurrentHP = Object->CurrentHealth ;
+    Percent = 1 - ( CurrentHP / Object->GivenHealth);
 	if (GetWorld())
 	{
 		bool IsTimerActive = GetWorld()->GetTimerManager().IsTimerActive(WidgetHandle);

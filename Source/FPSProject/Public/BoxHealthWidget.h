@@ -21,6 +21,8 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Native|UpdatedHealth")
 	float Percent;
+	UPROPERTY(BlueprintReadOnly, Category = "Native|UpdatedHealth")
+	float CurrentHP;
 
 
 };
