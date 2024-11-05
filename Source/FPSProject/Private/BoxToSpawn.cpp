@@ -2,8 +2,6 @@
 
 
 #include "BoxToSpawn.h"
-#include "Components/StaticMeshComponent.h"
-#include "Materials/MaterialInstanceDynamic.h"
 #include "UObject/ConstructorHelpers.h"
 #include "FPSGameMode.h"
 #include "Kismet/GameplayStatics.h"
@@ -13,11 +11,9 @@
 #include "Particles/ParticleSystem.h"
 #include "Sound/Soundbase.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
-#include "Components/InstancedStaticMeshComponent.h"
 #include "HISMSpawner.h"
 #include "Components/BoxComponent.h"
-#include "Materials/MaterialInstanceConstant.h"
-#include "Materials/MaterialInstance.h"
+
 
 
 #include "FPSProject/DebugHelper.h"
@@ -29,7 +25,7 @@ ABoxToSpawn::ABoxToSpawn()
 	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 	BoxComponent->SetCollisionResponseToChannel(ECC_Camera, ECR_Block);
 	BoxComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
-	BoxComponent->SetHiddenInGame(true, true);
+	BoxComponent->SetHiddenInGame(false, true);
 	BoxComponent->SetBoxExtent(FVector(64.f, 64.f, 64.f));
 
 	WidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComponent"));
@@ -52,15 +48,6 @@ ABoxToSpawn::ABoxToSpawn()
 		DEBUG::PrintString("Couldnt find health widget ref class", 3.f, FColor::Red); 
 	} 
 
-	static ConstructorHelpers::FObjectFinder<UMaterial> MaterialAsset(TEXT("Material'/Game/Myfiles/Material/M_BoxMaterial.M_BoxMaterial'"));
-	if (MaterialAsset.Succeeded())
-	{
-		MaterialToApply = MaterialAsset.Object;
-	}
-	else
-	{
-		DEBUG::PrintString("Unable to fetch the material ", 10.f, FColor::Red); 
-	} 
 	static ConstructorHelpers::FObjectFinder<UParticleSystem> ParticleAsset(TEXT("ParticleSystem'/Game/Myfiles/P_Explosion.P_Explosion'"));
 	if (ParticleAsset.Succeeded())
 	{
@@ -84,15 +71,6 @@ ABoxToSpawn::ABoxToSpawn()
 void ABoxToSpawn::BeginPlay()
 {
 	Super::BeginPlay();
-	if (WidgetComp && WidgetComp->GetWidget())
-	{
-		UBoxHealthWidget* Widget = Cast<UBoxHealthWidget>(WidgetComp->GetWidget());
-		if (Widget)
-		{
-			OnHealthChanged.AddDynamic(Widget, &UBoxHealthWidget::UpdateHealth);
-		}
-		WidgetComp->SetWorldLocation(GetActorLocation() + FVector(0.f, 0.f, 100.f));
-	}
 
 }
 
@@ -109,11 +87,19 @@ void ABoxToSpawn::ApplyDefaults(double X, double Y , double Z,double HealthValue
 	ISMCompRef->SetCustomDataValue(InstanceIndex, 1, Y/255.0, true);
 	ISMCompRef->SetCustomDataValue(InstanceIndex, 2, Z/255.0, true);
 
+	if (WidgetComp && WidgetComp->GetWidget())
+	{
+		UBoxHealthWidget* Widget = Cast<UBoxHealthWidget>(WidgetComp->GetWidget());
+		if (Widget)
+		{
+			OnHealthChanged.AddDynamic(Widget, &UBoxHealthWidget::UpdateHealth);
+		}
+		WidgetComp->SetWorldLocation(GetActorLocation() + FVector(0.f, 0.f, 100.f));
+	}
 	GivenHealth = HealthValue;
 	CurrentHealth = GivenHealth;
 	OnHealthChanged.Broadcast(GivenHealth);
 	ScoreToAward = ScoreValue;
-
 }
 
 
@@ -129,7 +115,7 @@ float ABoxToSpawn::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 	}
 	else
 	{
-		ISMCompRef->RemoveInstance(InstanceIndex);
+		/*ISMCompRef->RemoveInstance(InstanceIndex);*/
 		DEBUG::PrintString(FString::Printf(TEXT("Removed Instance : %d"), InstanceIndex), 5.f,FColor::Red);
 		//add effects
 		if (ParticleSystem)
@@ -145,10 +131,19 @@ float ABoxToSpawn::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 		if (GM)
 		{
 			GM->AddPlayerScore(ScoreToAward);
-		}
-		
+			GM->HISMObject->ReturnToPool(this);
+			if (ISMCompRef && ISMCompRef->IsValidInstance(InstanceIndex))
+			{
+				ISMCompRef->RemoveInstance(InstanceIndex);
+			}
+			else 
+			{
+				DEBUG::PrintString(FString::Printf(TEXT("Invalid Instance : %f"),InstanceIndex), 3.f, FColor::Red);
+			}
 
-		Destroy(); // may send to pool, if implemented
+		}
+
+
 		return DamageAmount;
 	}
 

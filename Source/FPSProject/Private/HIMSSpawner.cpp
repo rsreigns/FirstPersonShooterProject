@@ -7,6 +7,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "Materials/MaterialInstance.h"
+#include "BoxToSpawn.h"
 
 #include "FPSProject/DebugHelper.h"
 
@@ -40,13 +41,46 @@ AHISMSpawner::AHISMSpawner()
 	}
 }
 
+ABoxToSpawn* AHISMSpawner::GetPoolObject()
+{
+	if (BoxPool.Num() > 0)
+	{
+		int32 Num = BoxPool.Num();
+		ABoxToSpawn* PooledObject = BoxPool[Num - 1];
+		PooledObject->SetActorHiddenInGame(false);
+		PooledObject->SetActorEnableCollision(true);
+		BoxPool.RemoveAt(Num - 1);
+		return PooledObject;
+	}
+	return nullptr;
+}
 
+void AHISMSpawner::ReturnToPool(ABoxToSpawn* Object)
+{
+	if (Object)
+	{
+		Object->SetActorHiddenInGame(true);
+		Object->SetActorEnableCollision(false);
+		Object->SetActorTransform(PoolTransform) ;
+		BoxPool.Add(Object);
+	}
+}
 
 void AHISMSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
+	PoolTransform = GetActorTransform();
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	for (int i = 0; i < MaxPoolSize; i++)
+	{
+		ABoxToSpawn* PoolObject = GetWorld()->SpawnActor<ABoxToSpawn>(ABoxToSpawn::StaticClass(), PoolTransform, SpawnParams);
+		BoxPool.Add(PoolObject);
+		PoolObject->SetActorHiddenInGame(true);
+		PoolObject->SetActorEnableCollision(false);
+	}
 	
 }
 
