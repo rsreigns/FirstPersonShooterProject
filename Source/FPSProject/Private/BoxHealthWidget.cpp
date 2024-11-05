@@ -3,19 +3,33 @@
 
 #include "BoxHealthWidget.h"
 #include "BoxToSpawn.h"
+#include "TimerManager.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "FPSProject/DebugHelper.h"
 
-void UBoxHealthWidget::UpdateHealth(float NewHealth)
+
+
+
+void UBoxHealthWidget::HideWidget()
 {
-	// code for changing progress bar dynamically
-	
-	if (bFirstUpdate)
+	this->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+void UBoxHealthWidget::SeeWidget(ABoxToSpawn* Object)
+{
+    Percent = 1 - ( Object->CurrentHealth / Object->GivenHealth);
+	if (GetWorld())
 	{
-		MaxHealth = NewHealth;
-		bFirstUpdate = false;
+		bool IsTimerActive = GetWorld()->GetTimerManager().IsTimerActive(WidgetHandle);
+		if (IsTimerActive)
+		{
+			GetWorld()->GetTimerManager().ClearTimer(WidgetHandle);
+		}
+		GetWorld()->GetTimerManager().SetTimer(WidgetHandle, this, &ThisClass::HideWidget, 0.4f, false, -1.f);
+		this->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
 	}
-		
-	Health = NewHealth;
-	/*DEBUG::PrintString(FString::Printf(TEXT("Max Health :%f and Health = %f"), MaxHealth,Health));*/
+
 }

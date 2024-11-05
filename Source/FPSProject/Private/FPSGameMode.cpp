@@ -130,27 +130,14 @@ void AFPSGameMode::RetrieveDataFromJSON()
 									FActorSpawnParameters SpawnParams;
 									SpawnParams.Owner = this;
 									SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-									
-									ABoxToSpawn* SpawnedBox = GetWorld()->SpawnActor<ABoxToSpawn>(ABoxToSpawn::StaticClass()
-										, Location, Rotation, SpawnParams);
-									if (SpawnedBox)
-									{
-										FTransform Transform(Rotation, Location, Scale);
-		
-										HISMObject->GetPoolObject()->ApplyDefaults(It.ColorR, It.ColorG, It.ColorB, It.Health, It.Score, Transform, HISMObject->ISMComp, InstanceIndex);
-										
-										InstanceIndex+=1;
-										//DEBUG::PrintString(FString::Printf(TEXT("Health : %f, Score : %f, Color : %f / %f / %f"),
-										//	It.Health,It.Score, SpawnedBox->ColorX , SpawnedBox->ColorY, SpawnedBox->ColorZ),30.f,FColor::Black);
-									}
-									else
-									{
-										DEBUG::PrintString("Could not spawn", 5.f, FColor::Red);
-									}
-
+									FTransform Transform(Rotation, Location, Scale);
+									HISMObject->GetPoolObject()->ApplyDefaults(It.ColorR, It.ColorG, It.ColorB, It.Health, It.Score, Transform, HISMObject->ISMComp, InstanceIndex);
+									InstanceIndex+=1;
+									//DEBUG::PrintString(FString::Printf(TEXT("Health : %f, Score : %f, Color : %f / %f / %f"),
+									//It.Health,It.Score, SpawnedBox->ColorX , SpawnedBox->ColorY, SpawnedBox->ColorZ),30.f,FColor::Black);
 								}
+								
 							}
-							
 						}
 					}
 				}

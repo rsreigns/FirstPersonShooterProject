@@ -8,15 +8,14 @@
 
 class UUserWidget;
 class UMyUserScoreWidget;
+class UBoxHealthWidget;
 
 UCLASS()
 class FPSPROJECT_API AMyHUD : public AHUD
 {
 	GENERATED_BODY()
 public:
-	
-	UPROPERTY(EditDefaultsOnly,Category = "Core|UI")
-	TArray<TSubclassOf<UUserWidget>> WidgetsToAdd;
+
 
 	virtual void BeginPlay() override;
 
@@ -27,5 +26,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Core|UI|Score")
 	TSubclassOf<UMyUserScoreWidget> ScoreWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly,Category= "Core|UI")
+	TArray<TSubclassOf<UUserWidget>> WidgetsToAdd;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Core|UI")
+	TSubclassOf<UBoxHealthWidget> BoxHealthWidget;
+	UBoxHealthWidget* HealthWidget;
 	
 };

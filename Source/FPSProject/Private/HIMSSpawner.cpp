@@ -78,7 +78,7 @@ void AHISMSpawner::BeginPlay()
 	{
 		ABoxToSpawn* PoolObject = GetWorld()->SpawnActor<ABoxToSpawn>(ABoxToSpawn::StaticClass(), PoolTransform, SpawnParams);
 		BoxPool.Add(PoolObject);
-		PoolObject->SetActorHiddenInGame(true);
+		PoolObject->SetActorHiddenInGame(false);
 		PoolObject->SetActorEnableCollision(false);
 	}
 	

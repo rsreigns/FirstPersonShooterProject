@@ -5,10 +5,14 @@
 #include "Blueprint/UserWidget.h"
 #include "MyUserScoreWidget.h"
 #include "FPSGameMode.h"
+#include "BoxHealthWidget.h"
+
+
 
 void AMyHUD::BeginPlay()
 {
 	Super::BeginPlay();
+
 	for (TSubclassOf<UUserWidget>& Widget : WidgetsToAdd)
 	{
 		if (!Widget)continue;
@@ -17,6 +21,11 @@ void AMyHUD::BeginPlay()
 		{
 			WidgetInstance->AddToViewport();
 		}
+	}
+	HealthWidget = CreateWidget<UBoxHealthWidget>(GetWorld(), BoxHealthWidget);
+	if (HealthWidget)
+	{
+		HealthWidget->AddToViewport();
 	}
 
 	ScoreWidget = CreateWidget<UMyUserScoreWidget>(GetWorld(), ScoreWidgetClass);

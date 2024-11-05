@@ -6,22 +6,21 @@
 #include "Blueprint/UserWidget.h"
 #include "BoxHealthWidget.generated.h"
 
-/**
- * 
- */
+class ABoxToSpawn;
+
 UCLASS()
 class FPSPROJECT_API UBoxHealthWidget : public UUserWidget
 {
 	GENERATED_BODY()
+protected:
+	FTimerHandle WidgetHandle;
 public:
-	UFUNCTION()
-	void UpdateHealth(float NewHealth);
 
-	UPROPERTY(BlueprintReadOnly,Category="Native|UpdatedHealth")
-	float Health;
-
-	bool bFirstUpdate = true;
+	void HideWidget();
+	void SeeWidget(ABoxToSpawn* Object);
 
 	UPROPERTY(BlueprintReadOnly, Category = "Native|UpdatedHealth")
-	float MaxHealth;
+	float Percent;
+
+
 };

@@ -16,6 +16,10 @@
 #include "EnhancedInputComponent.h"
 #include "Sound/SoundWave.h"
 #include "Kismet/GameplayStatics.h"
+#include "BoxHealthWidget.h"
+#include "MyHUD.h"
+#include "BoxToSpawn.h"
+#include "HISMSpawner.h"
 
 #include "DebugHelper.h"
 
@@ -42,6 +46,7 @@ AFPSProjectCharacter::AFPSProjectCharacter()
 void AFPSProjectCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
 }
 
 
@@ -50,22 +55,20 @@ void AFPSProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	MyController = Cast<APlayerController>(GetController());
+	MyHUDRef = Cast<AMyHUD>(MyController->GetHUD());
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(MyController->GetLocalPlayer());
 	if (Subsystem && DefaultMappingContext)
 	{
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 		{
-
 			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
 			// Moving
 			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AFPSProjectCharacter::Move);
 
 			// Looking
 			EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AFPSProjectCharacter::Look);
-
 			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AFPSProjectCharacter::StartFire);
 			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AFPSProjectCharacter::StopFire);
 		}
@@ -75,7 +78,6 @@ void AFPSProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 void AFPSProjectCharacter::Move(const FInputActionValue& Value)
 {
-	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
@@ -119,6 +121,14 @@ void AFPSProjectCharacter::FireEvent()
 	{
 		FDamageEvent DamageEvent;
 		OutHit.GetActor()->TakeDamage(1.f, DamageEvent, GetController(), this);
+		if (OutHit.Component->ComponentHasTag("HitBox"))
+		{
+			if (MyHUDRef && MyHUDRef->BoxHealthWidget)
+			{
+				ABoxToSpawn* BoxRef=Cast<ABoxToSpawn>(OutHit.Component->GetOwner());
+				MyHUDRef->HealthWidget->SeeWidget(BoxRef);
+			}
+		}
 	}
 }
 void AFPSProjectCharacter::StopFire(const FInputActionValue& Value)

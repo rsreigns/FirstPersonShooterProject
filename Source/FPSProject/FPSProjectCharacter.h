@@ -15,6 +15,7 @@ class UInputMappingContext;
 struct FInputActionValue;
 struct FHitResult;
 class USoundWave;
+class AMyHUD;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -72,6 +73,7 @@ public:
 	FTimerHandle FireTimerHandle;
 	float LastFiredTime;
 	float FirstFireDelay;
+	AMyHUD* MyHUDRef;
 
 #pragma endregion
 	AFPSProjectCharacter();
@@ -88,6 +90,7 @@ protected:
 	UFUNCTION()
 	void StartFire(const FInputActionValue& Value);
 	void FireEvent();
+	
 	UFUNCTION()
 	void StopFire(const FInputActionValue& Value);
 	FHitResult DoLineTraceByObject(FVector Start, FVector End, bool ShowDebug = false, bool ForDuration  = false, float Duration =2.f);

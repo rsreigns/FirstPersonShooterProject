@@ -6,8 +6,6 @@
 #include "GameFramework/Actor.h"
 #include "BoxToSpawn.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, float, NewHealth);
-
 
 class UHierarchicalInstancedStaticMeshComponent;
 class UWidgetComponent;
@@ -37,9 +35,7 @@ protected:
 public:	
 #pragma region Components
 
-	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category = "Core|Widget")
-	UWidgetComponent* WidgetComp;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Core|Widget")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Core")
 	UBoxComponent* BoxComponent;
 
 #pragma endregion
@@ -49,9 +45,6 @@ public:
 	double GivenHealth;
 	UPROPERTY(EditInstanceOnly)
 	double ScoreToAward;
-
-	UPROPERTY(BlueprintAssignable,Category="Event")
-	FOnHealthChanged OnHealthChanged;
 
 
 	void ApplyDefaults(double X, double Y, double Z, double HealthValue, double ScoreValue, FTransform Transform,
@@ -64,8 +57,5 @@ public:
 
 	UPROPERTY()
 	double CurrentHealth;
-
-	AHISMSpawner* PoolRef;
-
 
 };

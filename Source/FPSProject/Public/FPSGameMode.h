@@ -8,7 +8,6 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnScoreChanged, float, NewScore);
 
-class ABoxToSpawn;
 class UHierarchicalInstancedStaticMeshComponent;
 class AHISMSpawner;
 
@@ -51,9 +50,6 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	TArray<FJSONObjectData> JSONObjectData;
-
-	UPROPERTY(EditDefaultsOnly,Category="Core")
-	TSubclassOf<ABoxToSpawn> SpawnBox;
 
 	UPROPERTY(BlueprintAssignable,Category="Events")
 	FOnScoreChanged OnScoreChanged;
