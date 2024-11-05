@@ -2,6 +2,7 @@
 
 
 #include "HISMSpawner.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Materials/MaterialInstanceConstant.h"
@@ -13,12 +14,12 @@ AHISMSpawner::AHISMSpawner()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	this->SetActorEnableCollision(false);
-	ISMComp = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("ISMComponent"));
+	ISMComp = CreateDefaultSubobject<UHierarchicalInstancedStaticMeshComponent>(TEXT("ISMComponent"));
 	ISMComp->SetCollisionResponseToAllChannels(ECR_Ignore);
 	ISMComp->SetVisibility(true);
 	ISMComp->SetupAttachment(RootComponent);
 	ISMComp->NumCustomDataFloats = 3;
-	ISMComp->SetNumCustomDataFloats(3);
+
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMeshAsset(TEXT("StaticMesh'/Game/Myfiles/Dummy.Dummy'"));
 	if (CubeMeshAsset.Succeeded())
 	{

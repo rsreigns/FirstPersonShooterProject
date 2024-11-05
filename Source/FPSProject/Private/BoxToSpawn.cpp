@@ -12,7 +12,7 @@
 #include "BoxHealthWidget.h"
 #include "Particles/ParticleSystem.h"
 #include "Sound/Soundbase.h"
-//#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "HISMSpawner.h"
 #include "Components/BoxComponent.h"
@@ -97,7 +97,7 @@ void ABoxToSpawn::BeginPlay()
 }
 
 void ABoxToSpawn::ApplyDefaults(double X, double Y , double Z,double HealthValue, double ScoreValue, FTransform Transform,
-	UInstancedStaticMeshComponent* Component, int32 Index)
+	UHierarchicalInstancedStaticMeshComponent* Component, int32 Index)
 {
 	ISMCompRef = Component;
 	BoxComponent->SetWorldTransform(Transform);
@@ -134,7 +134,7 @@ float ABoxToSpawn::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 		//add effects
 		if (ParticleSystem)
 		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ParticleSystem, FTransform(GetActorRotation(), GetActorLocation(), FVector(1.f, 1.f, 1.f)));
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ParticleSystem, FTransform(GetActorRotation(), GetActorLocation(), FVector(1.f, 1.f, 1.f)),true,EPSCPoolMethod::AutoRelease);
 		}
 		if (ExplosionSound)
 		{

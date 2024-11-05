@@ -7,7 +7,7 @@
 #include "HISMSpawner.generated.h"
 
 class UInstancedStaticMeshComponent;
-class UMaterialToApply;
+class UHierarchicalInstancedStaticMeshComponent;
 
 UCLASS()
 class FPSPROJECT_API AHISMSpawner : public AActor
@@ -18,7 +18,7 @@ public:
 
 	AHISMSpawner();
 
-	UInstancedStaticMeshComponent* ISMComp;
+	UHierarchicalInstancedStaticMeshComponent* ISMComp;
 	TArray<int32> InstanceIndices;
 
 

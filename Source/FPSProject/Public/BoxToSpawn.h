@@ -10,7 +10,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, float, NewHealth);
 
 class UMaterial;
 class UStaticMeshComponent;
-//class UHierarchicalInstancedStaticMeshComponent;
+class UHierarchicalInstancedStaticMeshComponent;
 class UInstancedStaticMeshComponent;
 class UWidgetComponent;
 class UParticleSystem;
@@ -26,7 +26,7 @@ class FPSPROJECT_API ABoxToSpawn : public AActor
 	
 private:
 	int32 InstanceIndex;
-	UInstancedStaticMeshComponent* ISMCompRef;
+	UHierarchicalInstancedStaticMeshComponent* ISMCompRef;
 public:	
 	ABoxToSpawn();
 
@@ -60,7 +60,7 @@ public:
 	UMaterial* MaterialToApply;
 
 	void ApplyDefaults(double X, double Y, double Z, double HealthValue, double ScoreValue, FTransform Transform,
-		UInstancedStaticMeshComponent* Component,int32 Index);
+		UHierarchicalInstancedStaticMeshComponent* Component,int32 Index);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Core|Particle")
 	UParticleSystem* ParticleSystem;
