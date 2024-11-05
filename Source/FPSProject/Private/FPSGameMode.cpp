@@ -25,7 +25,8 @@ void AFPSGameMode::RetrieveDataFromJSON()
 {
 	DEBUG::PrintString("retrieving data");
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
-	Request->SetURL("https://raw.githubusercontent.com/CyrusCHAU/Varadise-Technical-Test/refs/heads/main/data.json");
+	//Request->SetURL("https://raw.githubusercontent.com/CyrusCHAU/Varadise-Technical-Test/refs/heads/main/data.json");
+	Request->SetURL("https://github.com/rsreigns/FirstPersonShooterProject/blob/main/SpawnObject.json");
 	Request->SetVerb("GET");
 
 	Request->OnProcessRequestComplete().BindLambda([this](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSucceeded)
