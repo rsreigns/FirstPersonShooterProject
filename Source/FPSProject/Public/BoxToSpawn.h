@@ -10,17 +10,23 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, float, NewHealth);
 
 class UMaterial;
 class UStaticMeshComponent;
+//class UHierarchicalInstancedStaticMeshComponent;
+class UInstancedStaticMeshComponent;
 class UWidgetComponent;
 class UParticleSystem;
 class UUserWidget;
 class UBoxHealthWidget;
 class USoundBase;
+class UBoxComponent;
 
 UCLASS()
 class FPSPROJECT_API ABoxToSpawn : public AActor
 {
 	GENERATED_BODY()
 	
+private:
+	int32 InstanceIndex;
+	UInstancedStaticMeshComponent* ISMCompRef;
 public:	
 	ABoxToSpawn();
 
@@ -32,10 +38,11 @@ protected:
 
 public:	
 #pragma region Components
-	UPROPERTY(EditDefaultsOnly, Category = "Core|MeshComp")
-	UStaticMeshComponent* MeshComp;
+
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category = "Core|Widget")
 	UWidgetComponent* WidgetComp;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Core|Widget")
+	UBoxComponent* BoxComponent;
 
 #pragma endregion
 	UPROPERTY(EditInstanceOnly)
@@ -52,7 +59,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Core|Material")
 	UMaterial* MaterialToApply;
 
-	void ApplyDefaults(double X, double Y, double Z, double HealthValue, double ScoreValue);
+	void ApplyDefaults(double X, double Y, double Z, double HealthValue, double ScoreValue, FTransform Transform,
+		UInstancedStaticMeshComponent* Component,int32 Index);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Core|Particle")
 	UParticleSystem* ParticleSystem;

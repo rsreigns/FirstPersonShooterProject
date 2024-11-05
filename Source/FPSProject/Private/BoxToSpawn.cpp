@@ -12,13 +12,26 @@
 #include "BoxHealthWidget.h"
 #include "Particles/ParticleSystem.h"
 #include "Sound/Soundbase.h"
+//#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
+#include "HISMSpawner.h"
+#include "Components/BoxComponent.h"
+#include "Materials/MaterialInstanceConstant.h"
+#include "Materials/MaterialInstance.h"
+
 
 #include "FPSProject/DebugHelper.h"
 ABoxToSpawn::ABoxToSpawn()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
-	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
+
+	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
+	BoxComponent->SetCollisionResponseToChannel(ECC_Camera, ECR_Block);
+	BoxComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	BoxComponent->SetHiddenInGame(true, true);
+	BoxComponent->SetBoxExtent(FVector(64.f, 64.f, 64.f));
+
 	WidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComponent"));
 	WidgetComp->SetupAttachment(RootComponent);
 	WidgetComp->SetDrawAtDesiredSize(true); 
@@ -36,23 +49,13 @@ ABoxToSpawn::ABoxToSpawn()
 	}
 	else
 	{
-		DEBUG::PrintString("Couldnt find health widget ref class", 3.f, FColor::Red);
-	}
+		DEBUG::PrintString("Couldnt find health widget ref class", 3.f, FColor::Red); 
+	} 
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMeshAsset(TEXT("StaticMesh'/Game/Myfiles/Dummy.Dummy'"));
-	if (CubeMeshAsset.Succeeded())                 
-	{
-		MeshComp->SetStaticMesh(CubeMeshAsset.Object);
-	}
-	else
-	{
-		DEBUG::PrintString("Unable to fetch the mesh ",10.f,FColor::Red);
-	}
 	static ConstructorHelpers::FObjectFinder<UMaterial> MaterialAsset(TEXT("Material'/Game/Myfiles/Material/M_BoxMaterial.M_BoxMaterial'"));
 	if (MaterialAsset.Succeeded())
 	{
 		MaterialToApply = MaterialAsset.Object;
-		MeshComp->SetMaterial(0,MaterialAsset.Object);
 	}
 	else
 	{
@@ -93,33 +96,24 @@ void ABoxToSpawn::BeginPlay()
 
 }
 
-void ABoxToSpawn::ApplyDefaults(double X, double Y , double Z,double HealthValue, double ScoreValue)
+void ABoxToSpawn::ApplyDefaults(double X, double Y , double Z,double HealthValue, double ScoreValue, FTransform Transform,
+	UInstancedStaticMeshComponent* Component, int32 Index)
 {
-	if (MaterialToApply)
-	{
-		UMaterialInstanceDynamic* DynamicMaterial = MeshComp->CreateAndSetMaterialInstanceDynamic(0);
-		if (DynamicMaterial)
-		{
-			DynamicMaterial->SetScalarParameterValue("Red", X / 255.0f);
-			DynamicMaterial->SetScalarParameterValue("Green", Y / 255.0f);
-			DynamicMaterial->SetScalarParameterValue("Blue", Z / 255.0f);
+	ISMCompRef = Component;
+	BoxComponent->SetWorldTransform(Transform);
 
-			MeshComp->SetMaterial(0, DynamicMaterial);
+	InstanceIndex = Index;
+	ISMCompRef->AddInstance(Transform, true);
 
-		}
-		else
-		{
-			DEBUG::PrintString("Failed to create dynamic material instance.", 10.f);
-		}
-	}
-	else
-	{
-		DEBUG::PrintString("MaterialToApply is null.", 10.f);
-	}
+	ISMCompRef->SetCustomDataValue(InstanceIndex, 0, X/255.0, true);
+	ISMCompRef->SetCustomDataValue(InstanceIndex, 1, Y/255.0, true);
+	ISMCompRef->SetCustomDataValue(InstanceIndex, 2, Z/255.0, true);
+
 	GivenHealth = HealthValue;
 	CurrentHealth = GivenHealth;
 	OnHealthChanged.Broadcast(GivenHealth);
 	ScoreToAward = ScoreValue;
+
 }
 
 
@@ -135,7 +129,8 @@ float ABoxToSpawn::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 	}
 	else
 	{
-
+		ISMCompRef->RemoveInstance(InstanceIndex);
+		DEBUG::PrintString(FString::Printf(TEXT("Removed Instance : %d"), InstanceIndex), 5.f,FColor::Red);
 		//add effects
 		if (ParticleSystem)
 		{

@@ -11,10 +11,13 @@
 #include "BoxToSpawn.h"
 #include "MyUserScoreWidget.h"
 #include "Blueprint/UserWidget.h"
+#include "HISMSpawner.h"
+
 
 //#include "TESTSpawnBox.h"
 #include "FPSProject/DebugHelper.h"
 #include "DrawDebugHelpers.h"
+
 
 
 
@@ -76,6 +79,7 @@ void AFPSGameMode::RetrieveDataFromJSON()
 				const TArray<TSharedPtr<FJsonValue>>* ObjectsArray;
 				if (JSONObject->TryGetArrayField("objects", ObjectsArray))
 				{
+					int32  InstanceIndex = 0;
 					for (const auto& JsonValue : *ObjectsArray)
 					{
 						TSharedPtr<FJsonObject> TypeObject = JsonValue->AsObject();
@@ -83,6 +87,7 @@ void AFPSGameMode::RetrieveDataFromJSON()
 						{
 							for (FJSONObjectData& It : JSONObjectData)
 							{
+								
 								if (It.Name == TypeObject->GetStringField("type"))
 								{
 									const TArray<TSharedPtr<FJsonValue>>* LocationArray;
@@ -128,11 +133,21 @@ void AFPSGameMode::RetrieveDataFromJSON()
 
 									//DEBUG::PrintString(FString::Printf(TEXT("Scale : %s"), *Scale.ToString()),12.f);
 									//DrawDebugSphere(GetWorld(), Location, 40.f, 12, FColor::Red, true, -1.f, (uint8)0U, 1.f);
+									
+									
 									ABoxToSpawn* SpawnedBox = GetWorld()->SpawnActor<ABoxToSpawn>(ABoxToSpawn::StaticClass()
 										, Location, Rotation, SpawnParams);
 									if (SpawnedBox)
 									{
-										SpawnedBox->ApplyDefaults(It.ColorR, It.ColorG, It.ColorB,It.Health,It.Score);
+										FTransform Transform(Rotation, Location, Scale);
+										if (!HISMObject)
+										{
+											FActorSpawnParameters SpawnParameters;
+											SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+											HISMObject = GetWorld()->SpawnActor<AHISMSpawner>(AHISMSpawner::StaticClass(), Transform, SpawnParameters);
+										}
+										SpawnedBox->ApplyDefaults(It.ColorR, It.ColorG, It.ColorB,It.Health,It.Score, Transform,HISMObject->ISMComp,InstanceIndex);
+										InstanceIndex+=1;
 										//DEBUG::PrintString(FString::Printf(TEXT("Health : %f, Score : %f, Color : %f / %f / %f"),
 										//	It.Health,It.Score, SpawnedBox->ColorX , SpawnedBox->ColorY, SpawnedBox->ColorZ),30.f,FColor::Black);
 									}
@@ -174,5 +189,6 @@ void AFPSGameMode::AddPlayerScore(float ScoreToAdd)
 
 void AFPSGameMode::BeginPlay()
 {
+
 	RetrieveDataFromJSON();// remove this function call from bp
 }

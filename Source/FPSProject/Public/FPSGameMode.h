@@ -9,6 +9,9 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnScoreChanged, float, NewScore);
 
 class ABoxToSpawn;
+class UHierarchicalInstancedStaticMeshComponent;
+class AHISMSpawner;
+
 USTRUCT(BlueprintType)
 struct FJSONObjectData
 {
@@ -37,9 +40,11 @@ UCLASS()
 class FPSPROJECT_API AFPSGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
+
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	float PlayerScore = 0.f;
+
 public:
 	UFUNCTION(BlueprintCallable)
 	void RetrieveDataFromJSON();
@@ -57,4 +62,6 @@ public:
 
 	virtual void BeginPlay() override;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Core|Spawn")
+	AHISMSpawner* HISMObject;
 };
