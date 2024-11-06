@@ -44,6 +44,9 @@ protected:
 
 	int counter=0;
 
+	UFUNCTION()
+	void SpawnPoolBatch();
+
 	FTimerHandle SpawnTimerHandle;
 	int32 RemainingPoolToSpawn;
 

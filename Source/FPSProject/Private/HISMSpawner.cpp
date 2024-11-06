@@ -105,62 +105,44 @@ void AHISMSpawner::ReturnToPool(ABoxToSpawn* Object)
 
 
 
-
 void AHISMSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 	PoolTransform = GetActorTransform();
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	for (int i = 0; i < MaxPoolSize; i++)
-	{
-		ABoxToSpawn* PoolObject = GetWorld()->SpawnActor<ABoxToSpawn>(ABoxToSpawn::StaticClass(), PoolTransform, SpawnParams);
-		BoxPool.Add(PoolObject);
-		PoolObject->SetActorHiddenInGame(true);
-		PoolObject->SetActorEnableCollision(false);
-	}
+
+	// Set up initial properties
 	ISMComp->ClearInstances();
-	
+	RemainingPoolToSpawn = MaxPoolSize; // Keep track of remaining objects to spawn
+
+	// Set up a timer to spawn instances in batches
+	GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this,&ThisClass::SpawnPoolBatch, 0.01f, true);
 }
-//void AHISMSpawner::BeginPlay()
-//{
-//	Super::BeginPlay();
-//	PoolTransform = GetActorTransform();
-//
-//	// Set up initial properties
-//	ISMComp->ClearInstances();
-//	RemainingPoolToSpawn = MaxPoolSize; // Keep track of remaining objects to spawn
-//
-//	// Set up a timer to spawn instances in batches
-//	GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &ThisClass::SpawnPoolBatch, 0.01f, true);
-//}
-//
-//void AHISMSpawner::SpawnPoolBatch()
-//{
-//	if (RemainingPoolToSpawn > 0)
-//	{
-//		int32 BatchSize = FMath::Min(10, RemainingPoolToSpawn); // Spawn in batches of 10
-//		FActorSpawnParameters SpawnParams;
-//		SpawnParams.Owner = this;
-//		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-//
-//		for (int32 i = 0; i < BatchSize; i++)
-//		{
-//			ABoxToSpawn* PoolObject = GetWorld()->SpawnActor<ABoxToSpawn>(ABoxToSpawn::StaticClass(), PoolTransform, SpawnParams);
-//			BoxPool.Add(PoolObject);
-//			PoolObject->SetActorHiddenInGame(true);
-//			PoolObject->SetActorEnableCollision(false);
-//		}
-//
-//		RemainingPoolToSpawn -= BatchSize;
-//	}
-//	else
-//	{
-//		// All objects have been spawned; clear the timer
-//		GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
-//	}
-//}
-//
-//
-//
+
+void AHISMSpawner::SpawnPoolBatch()
+{
+	if (RemainingPoolToSpawn > 0)
+	{
+		int32 BatchSize = FMath::Min(10, RemainingPoolToSpawn); // Spawn in batches of 10
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		for (int32 i = 0; i < BatchSize; i++)
+		{
+			ABoxToSpawn* PoolObject = GetWorld()->SpawnActor<ABoxToSpawn>(ABoxToSpawn::StaticClass(), PoolTransform, SpawnParams);
+			BoxPool.Add(PoolObject);
+			PoolObject->SetActorHiddenInGame(true);
+			PoolObject->SetActorEnableCollision(false);
+		}
+
+		RemainingPoolToSpawn -= BatchSize;
+	}
+	else
+	{
+		// All objects have been spawned; clear the timer
+		GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
+	}
+}
+
+
+

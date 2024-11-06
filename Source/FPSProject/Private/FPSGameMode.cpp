@@ -168,5 +168,10 @@ void AFPSGameMode::BeginPlay()
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	FTransform NewTransform(FRotator(), FVector(0.f,0.f,-2000.f));
 	HISMObject = GetWorld()->SpawnActor<AHISMSpawner>(AHISMSpawner::StaticClass(), NewTransform, SpawnParams);
-	RetrieveDataFromJSON(); 
+	GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &ThisClass::RetrieveData, 1.f);
+}
+
+void AFPSGameMode::RetrieveData()
+{
+	RetrieveDataFromJSON();
 }

@@ -61,4 +61,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Core|Spawn")
 	AHISMSpawner* HISMObject;
 
+	FTimerHandle SpawnTimerHandle;
+	UFUNCTION()
+	void RetrieveData();
+
 };
