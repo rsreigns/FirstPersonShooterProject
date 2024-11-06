@@ -68,7 +68,6 @@ ABoxToSpawn* AHISMSpawner::GetPoolObject(double X, double Y, double Z,double Hea
 		ISMComp->SetCustomDataValue(InstanceIndex, 2, Z / 255.0, true);
 		
 		return PooledObject;
-
 }
 
 
@@ -109,20 +108,17 @@ void AHISMSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 	PoolTransform = GetActorTransform();
-
-	// Set up initial properties
 	ISMComp->ClearInstances();
-	RemainingPoolToSpawn = MaxPoolSize; // Keep track of remaining objects to spawn
+	RemainingPoolToSpawn = MaxPoolSize; 
 
-	// Set up a timer to spawn instances in batches
-	GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this,&ThisClass::SpawnPoolBatch, 0.01f, true);
+	GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this,&ThisClass::SpawnPoolBatch, 0.25f, true);
 }
 
 void AHISMSpawner::SpawnPoolBatch()
 {
 	if (RemainingPoolToSpawn > 0)
 	{
-		int32 BatchSize = FMath::Min(10, RemainingPoolToSpawn); // Spawn in batches of 10
+		int32 BatchSize = FMath::Min(10, RemainingPoolToSpawn); // lets spawn in group of 10
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Owner = this;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -139,7 +135,6 @@ void AHISMSpawner::SpawnPoolBatch()
 	}
 	else
 	{
-		// All objects have been spawned; clear the timer
 		GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
 	}
 }

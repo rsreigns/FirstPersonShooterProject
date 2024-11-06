@@ -6,15 +6,10 @@
 #include "GameFramework/Actor.h"
 #include "BoxToSpawn.generated.h"
 
-
 class UHierarchicalInstancedStaticMeshComponent;
-class UWidgetComponent;
 class UParticleSystem;
-class UBoxHealthWidget;
 class USoundBase;
 class UBoxComponent;
-class AHISMSpawner;
-
 
 UCLASS()
 class FPSPROJECT_API ABoxToSpawn : public AActor
@@ -22,16 +17,10 @@ class FPSPROJECT_API ABoxToSpawn : public AActor
 	GENERATED_BODY()
 	
 public:
-	int32 ArrayIndex;
-
-
 	UHierarchicalInstancedStaticMeshComponent* ISMCompRef;
-public:	
 	ABoxToSpawn();
 
 protected:
-
-	virtual void BeginPlay() override;
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -42,6 +31,7 @@ public:
 	UBoxComponent* BoxComponent;
 
 #pragma endregion
+
 	UPROPERTY(EditInstanceOnly)
 	FString BoxName;
 	UPROPERTY(EditInstanceOnly)

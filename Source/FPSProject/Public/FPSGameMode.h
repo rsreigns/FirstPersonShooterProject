@@ -8,7 +8,6 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnScoreChanged, float, NewScore);
 
-class UHierarchicalInstancedStaticMeshComponent;
 class AHISMSpawner;
 
 USTRUCT(BlueprintType)

@@ -5,17 +5,11 @@
 #include "UObject/ConstructorHelpers.h"
 #include "HttpModule.h"
 #include "Json.h"
-#include "Runtime/Online/HTTP/Public/Http.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
 #include "BoxToSpawn.h"
-#include "MyUserScoreWidget.h"
-#include "Blueprint/UserWidget.h"
 #include "HISMSpawner.h"
-#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 
-
-//#include "TESTSpawnBox.h"
 #include "FPSProject/DebugHelper.h"
 #include "DrawDebugHelpers.h"
 
@@ -26,7 +20,7 @@ void AFPSGameMode::RetrieveDataFromJSON()
 {
 	DEBUG::PrintString("retrieving data");
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
-	Request->SetURL("https://raw.githubusercontent.com/CyrusCHAU/Varadise-Technical-Test/refs/heads/main/data.json");
+	Request->SetURL("https://raw.githubusercontent.com/CyrusCHAU/Varadise-Technical-Test/refs/heads/main/data.json");//url
 
 	Request->SetVerb("GET");
 
@@ -42,7 +36,6 @@ void AFPSGameMode::RetrieveDataFromJSON()
 			// Deserialize JSON string into a JSON object
 			if (FJsonSerializer::Deserialize(Reader, JSONObject) && JSONObject.IsValid())
 			{
-				// Retrieve the "types" array from the JSON object
 				const TArray<TSharedPtr<FJsonValue>>* TypesArray;
 				if (JSONObject->TryGetArrayField("types", TypesArray))
 				{
@@ -56,7 +49,7 @@ void AFPSGameMode::RetrieveDataFromJSON()
 							CurrentData.Name = TypeObject->GetStringField("name");
 							CurrentData.Health = TypeObject->GetNumberField("health");
 							CurrentData.Score = TypeObject->GetNumberField("score");
-							// Retrieve the color array and set RGB values
+							// Retrieving color array
 							const TArray<TSharedPtr<FJsonValue>>* ColorArray;
 							if (TypeObject->TryGetArrayField("color", ColorArray) && ColorArray->Num() == 3)
 							{

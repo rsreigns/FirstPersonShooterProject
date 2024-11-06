@@ -5,12 +5,8 @@
 #include "UObject/ConstructorHelpers.h"
 #include "FPSGameMode.h"
 #include "Kismet/GameplayStatics.h"
-#include "Components/WidgetComponent.h"
-#include "Blueprint/UserWidget.h"
-#include "BoxHealthWidget.h"
 #include "Particles/ParticleSystem.h"
 #include "Sound/Soundbase.h"
-#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "HISMSpawner.h"
 #include "Components/BoxComponent.h"
 
@@ -48,11 +44,6 @@ ABoxToSpawn::ABoxToSpawn()
 	}
 }
 
-void ABoxToSpawn::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
 void ABoxToSpawn::ApplyBoxDefaults()
 {
 	BoxComponent->SetupAttachment(RootComponent);
@@ -63,8 +54,6 @@ void ABoxToSpawn::ApplyBoxDefaults()
 	BoxComponent->ComponentTags.Add("HitBox");
 }
 
-
-
 float ABoxToSpawn::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	CurrentHealth -= DamageAmount;
@@ -72,7 +61,6 @@ float ABoxToSpawn::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 	{
 		return DamageAmount;
 	}
-
 
 	if (ParticleSystem)
 	{
