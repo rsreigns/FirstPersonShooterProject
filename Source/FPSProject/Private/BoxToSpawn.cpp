@@ -58,7 +58,7 @@ void ABoxToSpawn::ApplyBoxDefaults()
 	BoxComponent->SetupAttachment(RootComponent);
 	BoxComponent->SetCollisionResponseToChannel(ECC_Camera, ECR_Block);
 	BoxComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
-	BoxComponent->SetHiddenInGame(false, true);
+	BoxComponent->SetHiddenInGame(true, true);
 	BoxComponent->SetBoxExtent(FVector(64.f, 64.f, 64.f));  
 	BoxComponent->ComponentTags.Add("HitBox");
 }

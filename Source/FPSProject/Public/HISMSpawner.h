@@ -44,6 +44,7 @@ protected:
 
 	int counter=0;
 
-
+	FTimerHandle SpawnTimerHandle;
+	int32 RemainingPoolToSpawn;
 
 };

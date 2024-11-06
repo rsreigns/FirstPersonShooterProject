@@ -9,6 +9,7 @@
 #include "Materials/MaterialInstance.h"
 #include "BoxToSpawn.h"
 #include "Components/BoxComponent.h"
+#include "TimerManager.h"
 
 #include "FPSProject/DebugHelper.h"
 
@@ -70,6 +71,7 @@ ABoxToSpawn* AHISMSpawner::GetPoolObject(double X, double Y, double Z,double Hea
 
 }
 
+
 void AHISMSpawner::ReturnToPool(ABoxToSpawn* Object)
 {
 	if (Object)
@@ -78,25 +80,31 @@ void AHISMSpawner::ReturnToPool(ABoxToSpawn* Object)
 		Object->SetActorEnableCollision(false);
 		Object->SetActorTransform(PoolTransform);
 
-		int32 InstanceToRemove ;
 
-		for (ABoxToSpawn* Box : SpawnedPool)
+		int32 InstanceToRemove = SpawnedPool.Find(Object);
+		if (InstanceToRemove != INDEX_NONE)
 		{
-			if (Box && Box == Object)
+			if (ISMComp->IsValidInstance(InstanceToRemove))
 			{
-				InstanceToRemove = SpawnedPool.Find(Box)  ;
-				break;
+				ISMComp->RemoveInstance(InstanceToRemove);
+
+
+				int32 LastIndex = SpawnedPool.Num() - 1;
+				if (InstanceToRemove != LastIndex)
+				{
+					SpawnedPool[InstanceToRemove] = SpawnedPool[LastIndex];
+				}
+
+				SpawnedPool.RemoveAt(LastIndex);
+
+				BoxPool.Add(Object);
 			}
 		}
-		if (ISMComp->IsValidInstance(InstanceToRemove))
-		{
-			ISMComp->RemoveInstance(InstanceToRemove);
-			SpawnedPool.RemoveAt(InstanceToRemove);
-			BoxPool.Add(Object);
-		}
-		DEBUG::PrintString(FString::Printf(TEXT("Array Index : %d , counter : %d"), InstanceToRemove, counter), 5.f, FColor::Red);
 	}
 }
+
+
+
 
 void AHISMSpawner::BeginPlay()
 {
@@ -115,6 +123,44 @@ void AHISMSpawner::BeginPlay()
 	ISMComp->ClearInstances();
 	
 }
-
-
-
+//void AHISMSpawner::BeginPlay()
+//{
+//	Super::BeginPlay();
+//	PoolTransform = GetActorTransform();
+//
+//	// Set up initial properties
+//	ISMComp->ClearInstances();
+//	RemainingPoolToSpawn = MaxPoolSize; // Keep track of remaining objects to spawn
+//
+//	// Set up a timer to spawn instances in batches
+//	GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &ThisClass::SpawnPoolBatch, 0.01f, true);
+//}
+//
+//void AHISMSpawner::SpawnPoolBatch()
+//{
+//	if (RemainingPoolToSpawn > 0)
+//	{
+//		int32 BatchSize = FMath::Min(10, RemainingPoolToSpawn); // Spawn in batches of 10
+//		FActorSpawnParameters SpawnParams;
+//		SpawnParams.Owner = this;
+//		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+//
+//		for (int32 i = 0; i < BatchSize; i++)
+//		{
+//			ABoxToSpawn* PoolObject = GetWorld()->SpawnActor<ABoxToSpawn>(ABoxToSpawn::StaticClass(), PoolTransform, SpawnParams);
+//			BoxPool.Add(PoolObject);
+//			PoolObject->SetActorHiddenInGame(true);
+//			PoolObject->SetActorEnableCollision(false);
+//		}
+//
+//		RemainingPoolToSpawn -= BatchSize;
+//	}
+//	else
+//	{
+//		// All objects have been spawned; clear the timer
+//		GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
+//	}
+//}
+//
+//
+//
