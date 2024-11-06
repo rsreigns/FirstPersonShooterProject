@@ -12,6 +12,7 @@
 #include "MyUserScoreWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "HISMSpawner.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 
 
 //#include "TESTSpawnBox.h"
@@ -25,8 +26,8 @@ void AFPSGameMode::RetrieveDataFromJSON()
 {
 	DEBUG::PrintString("retrieving data");
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
-	//Request->SetURL("https://raw.githubusercontent.com/CyrusCHAU/Varadise-Technical-Test/refs/heads/main/data.json");
-	Request->SetURL("https://github.com/rsreigns/FirstPersonShooterProject/blob/main/SpawnObject.json");
+	Request->SetURL("https://raw.githubusercontent.com/CyrusCHAU/Varadise-Technical-Test/refs/heads/main/data.json");
+
 	Request->SetVerb("GET");
 
 	Request->OnProcessRequestComplete().BindLambda([this](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSucceeded)
@@ -126,7 +127,8 @@ void AFPSGameMode::RetrieveDataFromJSON()
 
 									}
 									FTransform Transform(Rotation, Location, Scale);
-									HISMObject->GetPoolObject()->ApplyDefaults(It.ColorR, It.ColorG, It.ColorB, It.Health, It.Score, Transform, HISMObject->ISMComp);
+									HISMObject->GetPoolObject(It.ColorR, It.ColorG, It.ColorB,It.Health,It.Score,Transform);
+
 									//DEBUG::PrintString(FString::Printf(TEXT("Health : %f, Score : %f, Color : %f / %f / %f"),
 									//It.Health,It.Score, SpawnedBox->ColorX , SpawnedBox->ColorY, SpawnedBox->ColorZ),30.f,FColor::Black);
 								}

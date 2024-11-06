@@ -8,6 +8,7 @@
 #include "Materials/MaterialInstanceConstant.h"
 #include "Materials/MaterialInstance.h"
 #include "BoxToSpawn.h"
+#include "Components/BoxComponent.h"
 
 #include "FPSProject/DebugHelper.h"
 
@@ -41,18 +42,32 @@ AHISMSpawner::AHISMSpawner()
 	}
 }
 
-ABoxToSpawn* AHISMSpawner::GetPoolObject()
+ABoxToSpawn* AHISMSpawner::GetPoolObject(double X, double Y, double Z,double HealthValue, double ScoreValue, FTransform Transform)
 {
-	if (BoxPool.Num() > 0)
-	{
+		// first spawn in the object
 		int32 Num = BoxPool.Num();
 		ABoxToSpawn* PooledObject = BoxPool[Num - 1];
+		BoxPool.RemoveAt(Num - 1);
+		SpawnedPool.Add(PooledObject);
+
+		//Then Set Defaults for pooled Object
+		PooledObject->CurrentHealth = HealthValue;
+		PooledObject->GivenHealth = HealthValue;
+		PooledObject->ScoreToAward = ScoreValue;
 		PooledObject->SetActorHiddenInGame(false);
 		PooledObject->SetActorEnableCollision(true);
-		BoxPool.RemoveAt(Num - 1);
+		PooledObject->SetActorTransform(Transform);
+		PooledObject->ApplyBoxDefaults();
+
+		//Then Add instance from HISM Component
+		int32 InstanceIndex = ISMComp->AddInstance(Transform, true);
+
+		ISMComp->SetCustomDataValue(InstanceIndex, 0, X / 255.0, true);
+		ISMComp->SetCustomDataValue(InstanceIndex, 1, Y / 255.0, true);
+		ISMComp->SetCustomDataValue(InstanceIndex, 2, Z / 255.0, true);
+		
 		return PooledObject;
-	}
-	return nullptr;
+
 }
 
 void AHISMSpawner::ReturnToPool(ABoxToSpawn* Object)
@@ -61,8 +76,25 @@ void AHISMSpawner::ReturnToPool(ABoxToSpawn* Object)
 	{
 		Object->SetActorHiddenInGame(true);
 		Object->SetActorEnableCollision(false);
-		Object->SetActorTransform(PoolTransform) ;
-		BoxPool.Add(Object);
+		Object->SetActorTransform(PoolTransform);
+
+		int32 InstanceToRemove ;
+
+		for (ABoxToSpawn* Box : SpawnedPool)
+		{
+			if (Box && Box == Object)
+			{
+				InstanceToRemove = SpawnedPool.Find(Box)  ;
+				break;
+			}
+		}
+		if (ISMComp->IsValidInstance(InstanceToRemove))
+		{
+			ISMComp->RemoveInstance(InstanceToRemove);
+			SpawnedPool.RemoveAt(InstanceToRemove);
+			BoxPool.Add(Object);
+		}
+		DEBUG::PrintString(FString::Printf(TEXT("Array Index : %d , counter : %d"), InstanceToRemove, counter), 5.f, FColor::Red);
 	}
 }
 

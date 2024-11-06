@@ -17,8 +17,11 @@
 
 
 #include "FPSProject/DebugHelper.h"
+
+
 ABoxToSpawn::ABoxToSpawn()
 {
+
 	PrimaryActorTick.bCanEverTick = false;
 
 	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent")); 
@@ -50,28 +53,14 @@ void ABoxToSpawn::BeginPlay()
 	Super::BeginPlay();
 }
 
-void ABoxToSpawn::ApplyDefaults(double X, double Y , double Z,double HealthValue, double ScoreValue, FTransform Transform,
-	UHierarchicalInstancedStaticMeshComponent* Component)
+void ABoxToSpawn::ApplyBoxDefaults()
 {
-
 	BoxComponent->SetupAttachment(RootComponent);
 	BoxComponent->SetCollisionResponseToChannel(ECC_Camera, ECR_Block);
 	BoxComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	BoxComponent->SetHiddenInGame(false, true);
-	BoxComponent->SetBoxExtent(FVector(64.f, 64.f, 64.f));
-
-	ISMCompRef = Component;
-	BoxComponent->SetWorldTransform(Transform);
+	BoxComponent->SetBoxExtent(FVector(64.f, 64.f, 64.f));  
 	BoxComponent->ComponentTags.Add("HitBox");
-
-	InstanceIndex = ISMCompRef->AddInstance(Transform, true);
-
-	ISMCompRef->SetCustomDataValue(InstanceIndex, 0, X/255.0, true);
-	ISMCompRef->SetCustomDataValue(InstanceIndex, 1, Y/255.0, true);
-	ISMCompRef->SetCustomDataValue(InstanceIndex, 2, Z/255.0, true);
-	GivenHealth = HealthValue;
-	CurrentHealth = GivenHealth;
-	ScoreToAward = ScoreValue;
 }
 
 
@@ -84,7 +73,6 @@ float ABoxToSpawn::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 		return DamageAmount;
 	}
 
-	DEBUG::PrintString(FString::Printf(TEXT("Removed Instance : %d"), InstanceIndex), 5.f,FColor::Red);
 
 	if (ParticleSystem)
 	{
@@ -101,19 +89,6 @@ float ABoxToSpawn::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 	{
 		GM->AddPlayerScore(ScoreToAward);
 		GM->HISMObject->ReturnToPool(this);
-		if (ISMCompRef && ISMCompRef->IsValidInstance(InstanceIndex))
-		{
-			ISMCompRef->RemoveInstance(InstanceIndex);
-			InstanceIndex = INDEX_NONE;
-		}
-		else if(!ISMCompRef)
-		{
-				DEBUG::PrintString("Invalid Instance component ", 10.f, FColor::Red);
-		}
-		else if (!ISMCompRef->IsValidInstance(InstanceIndex))
-		{
-
-		}
 	}
 	return DamageAmount;
 

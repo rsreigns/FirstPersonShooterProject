@@ -60,4 +60,5 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Core|Spawn")
 	AHISMSpawner* HISMObject;
+
 };

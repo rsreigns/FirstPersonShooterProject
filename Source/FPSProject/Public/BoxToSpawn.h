@@ -15,13 +15,16 @@ class USoundBase;
 class UBoxComponent;
 class AHISMSpawner;
 
+
 UCLASS()
 class FPSPROJECT_API ABoxToSpawn : public AActor
 {
 	GENERATED_BODY()
 	
 public:
-	int32 InstanceIndex;
+	int32 ArrayIndex;
+
+
 	UHierarchicalInstancedStaticMeshComponent* ISMCompRef;
 public:	
 	ABoxToSpawn();
@@ -47,8 +50,7 @@ public:
 	double ScoreToAward;
 
 
-	void ApplyDefaults(double X, double Y, double Z, double HealthValue, double ScoreValue, FTransform Transform,
-		UHierarchicalInstancedStaticMeshComponent* Component);
+	void ApplyBoxDefaults();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Core|Particle")
 	UParticleSystem* ParticleSystem;
