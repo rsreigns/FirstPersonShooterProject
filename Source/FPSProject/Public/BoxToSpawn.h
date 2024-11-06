@@ -21,7 +21,7 @@ public:
 	ABoxToSpawn();
 
 protected:
-
+	virtual void BeginPlay();
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 public:	
@@ -43,11 +43,18 @@ public:
 	void ApplyBoxDefaults();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Core|Particle")
-	UParticleSystem* ParticleSystem;
+	TSoftObjectPtr<UParticleSystem> ExplosionEffect;
 
-	USoundBase* ExplosionSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Core|Sound")
+	TSoftObjectPtr<USoundBase> ExplosionSound;
 
 	UPROPERTY()
 	double CurrentHealth;
+
+	void LoadEmitterAndSoundAsync();
+	void OnEmitterAndSoundLoaded();
+
+	USoundBase* LoadedExplosionSound;
+	UParticleSystem* LoadedExplosionEffect;
 
 };

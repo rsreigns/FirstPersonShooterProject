@@ -9,6 +9,9 @@
 #include "Sound/Soundbase.h"
 #include "HISMSpawner.h"
 #include "Components/BoxComponent.h"
+#include "Engine/StreamableManager.h"
+#include "Engine/AssetManager.h"
+
 
 
 
@@ -24,23 +27,53 @@ ABoxToSpawn::ABoxToSpawn()
 
 
 
-	static ConstructorHelpers::FObjectFinder<UParticleSystem> ParticleAsset(TEXT("ParticleSystem'/Game/Myfiles/P_Explosion.P_Explosion'"));
-	if (ParticleAsset.Succeeded())
+	//static ConstructorHelpers::FObjectFinder<UParticleSystem> ParticleAsset(TEXT("ParticleSystem'/Game/Myfiles/P_Explosion.P_Explosion'"));
+	//if (ParticleAsset.Succeeded())
+	//{
+	//	ExplosionEffect = ParticleAsset.Object;
+	//}
+	//else
+	//{
+	//	DEBUG::PrintString("Failed to load particle system", 10.f, FColor::Red); 
+	//}
+	//static ConstructorHelpers::FObjectFinder<USoundBase> SoundAsset(TEXT("SoundWave'/Game/Myfiles/Sound/Explosion02.Explosion02'"));
+	//if (SoundAsset.Succeeded())
+	//{
+	//	ExplosionSound = SoundAsset.Object;
+	//}
+	//else
+	//{
+	//	DEBUG::PrintString("Failed to Explosion sound", 10.f, FColor::Red);
+	//}
+}
+void ABoxToSpawn::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+void ABoxToSpawn::LoadEmitterAndSoundAsync()
+{
+	ExplosionEffect = TSoftObjectPtr<UParticleSystem>(FSoftObjectPath("/Game/Myfiles/P_Explosion.P_Explosion"));
+	ExplosionSound = TSoftObjectPtr<USoundBase>(FSoftObjectPath("/Game/Myfiles/Sound/Explosion02.Explosion02"));
+
+	FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
+
+	Streamable.RequestAsyncLoad(
+		{ ExplosionEffect.ToSoftObjectPath(), ExplosionSound.ToSoftObjectPath() },
+		FStreamableDelegate::CreateUObject(this, &ABoxToSpawn::OnEmitterAndSoundLoaded)
+	);
+}
+
+void ABoxToSpawn::OnEmitterAndSoundLoaded()
+{
+	if (ExplosionEffect.IsValid())
 	{
-		ParticleSystem = ParticleAsset.Object; 
+		LoadedExplosionEffect = ExplosionEffect.Get();
 	}
-	else
+
+	if (ExplosionSound.IsValid())
 	{
-		DEBUG::PrintString("Failed to load particle system", 10.f, FColor::Red); 
-	}
-	static ConstructorHelpers::FObjectFinder<USoundBase> SoundAsset(TEXT("SoundWave'/Game/Myfiles/Sound/Explosion02.Explosion02'"));
-	if (SoundAsset.Succeeded())
-	{
-		ExplosionSound = SoundAsset.Object;
-	}
-	else
-	{
-		DEBUG::PrintString("Failed to Explosion sound", 10.f, FColor::Red);
+		LoadedExplosionSound = ExplosionSound.Get();
 	}
 }
 
@@ -52,6 +85,7 @@ void ABoxToSpawn::ApplyBoxDefaults()
 	BoxComponent->SetHiddenInGame(true, true);
 	BoxComponent->SetBoxExtent(FVector(64.f, 64.f, 64.f));  
 	BoxComponent->ComponentTags.Add("HitBox");
+	LoadEmitterAndSoundAsync();
 }
 
 float ABoxToSpawn::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -62,16 +96,16 @@ float ABoxToSpawn::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 		return DamageAmount;
 	}
 
-	if (ParticleSystem)
+	if (ExplosionEffect)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ParticleSystem, FTransform(GetActorRotation(),
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), LoadedExplosionEffect, FTransform(GetActorRotation(),
 			GetActorLocation(), FVector(1.f, 1.f, 1.f)),true,EPSCPoolMethod::AutoRelease);
 	}
 	if (ExplosionSound)
 	{
-		UGameplayStatics::SpawnSoundAtLocation(this, ExplosionSound, GetActorLocation());
+		UGameplayStatics::SpawnSoundAtLocation(this, LoadedExplosionSound, GetActorLocation());
 	}
-		
+
 	AFPSGameMode* GM = Cast<AFPSGameMode>(UGameplayStatics::GetGameMode(this));
 	if (GM)
 	{
