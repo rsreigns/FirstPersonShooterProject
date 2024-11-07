@@ -77,7 +77,6 @@
       }
     },
 
-    // Additional 100 objects
     {
       "type": "BlueBox",
       "transform": {
